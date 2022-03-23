@@ -1,0 +1,34 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" type="text/css" href="../static/index.css">
+
+
+
+
+</head>
+
+<body>
+
+    <form class="selectCSV" action="/resultCSV" method="POST" enctype="multipart/form-data">
+
+        {% if name %}
+            <center>
+              <h3 style="color: blue;" class="let_space">{{name}}</h3>
+            </center> 
+
+          {% endif %}
+
+        <label for="csv_files">Upload a CSV formatted file:</label>
+        <input type="file" name="csv_files" class="form-control" accept=".csv" required />
+
+        <center><input class="file_submit" type="Submit"></center>
+
+
+    </form>
+
+</body>
+
+</html>
