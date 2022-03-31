@@ -5,8 +5,20 @@ import os
 
 app = Flask(__name__)
 
+def dataSorting(Lk, k):
+    retList = []
+    lenLk = len(Lk)
+    for i in range(lenLk):
+        for j in range(i + 1, lenLk):
+            L1 = list(Lk[i])[:k - 2]
+            L2 = list(Lk[j])[:k - 2]
+            L1.sort()
+            L2.sort()
+            if L1 == L2:
+                retList.append(Lk[i] | Lk[j])
+    return retList
 
-def getFromFile(fname):
+def getDataFromCSV(fname):
     itemSets = []
     itemSet = set()
 
@@ -21,43 +33,10 @@ def getFromFile(fname):
             itemSet.add(frozenset([item]))
         itemSets.append(record)
 
-    # with open(fname, 'r') as file:
-    #     csv_reader = reader(file)
-    #     for line in csv_reader:
-    #         line = list(filter(None, line))
-    #         record = set(line)
-    #         for item in record:
-    #             itemSet.add(frozenset([item]))
-    #         itemSets.append(record)
     return (itemSet, itemSets)
 
 
-def createC1(dataSet):
-    C1 = []
-    for transaction in dataSet:
-        for item in transaction:
-            if not [item] in C1:
-                C1.append([item])
-
-    C1.sort()
-    return list(map(frozenset, C1))
-
-
-def aprioriGen1(Lk, k):  # creates Ck
-    retList = []
-    lenLk = len(Lk)
-    for i in range(lenLk):
-        for j in range(i + 1, lenLk):
-            L1 = list(Lk[i])[:k - 2]
-            L2 = list(Lk[j])[:k - 2]
-            L1.sort()
-            L2.sort()
-            if L1 == L2:  # if first k-2 elements are equal
-                retList.append(Lk[i] | Lk[j])  # set union
-    return retList
-
-
-def scanD(D, Ck, minSupport):
+def scanData(D, Ck, minSupport):
     ssCnt = {}
     for tid in D:
         for can in Ck:
@@ -71,27 +50,23 @@ def scanD(D, Ck, minSupport):
     supportData = {}
     for key in ssCnt:
         support = ssCnt[key] / numItems * 1000
-
-        # support = ssCnt[key]
-        # print(support)
-
         if support >= minSupport:
             retList.insert(0, key)
         supportData[key] = support
     return (retList, supportData)
 
 
-def aprioriFromFile(fname, minSup, minConf):
-    (C1ItemSet, itemSetList) = getFromFile(fname)
+def apriori(fname, minSupport):
+    (C1ItemSet, itemSetList) = getDataFromCSV(fname)
 
     # print(itemSetList)
 
-    (L1, supportData) = scanD(itemSetList, C1ItemSet, minSup)
+    (L1, supportData) = scanData(itemSetList, C1ItemSet, minSupport)
     L = [L1]
     k = 2
     while len(L[k - 2]) > 0:
-        Ck = aprioriGen1(L[k - 2], k)
-        (Lk, supK) = scanD(itemSetList, Ck, minSup)  # scan DB to get Lk
+        Ck = dataSorting(L[k - 2], k)
+        (Lk, supK) = scanData(itemSetList, Ck, minSupport)
         supportData.update(supK)
         L.append(Lk)
         k += 1
@@ -116,7 +91,7 @@ def resultCSV():
     output = request.files['csv_files']
     print(output)
     # (freqItemSet, rules) = aprioriFromFile("E://Computer_Science//SEM_1//IA//Course_Project//WebSite//CSV_files//1000-out1.csv",20, 0.50)
-    (freqItemSet, rules) = aprioriFromFile(output, 20, 0.50)
+    (freqItemSet, rules) = apriori(output, 20)
 
     for count in freqItemSet:
 
