@@ -5,18 +5,37 @@ import os
 
 app = Flask(__name__)
 
-def dataSorting(Lk, k):
+def dataSorting(iteamSets, sizeOfItemSets):
     retList = []
-    lenLk = len(Lk)
+    lenLk = len(iteamSets)
     for i in range(lenLk):
         for j in range(i + 1, lenLk):
-            L1 = list(Lk[i])[:k - 2]
-            L2 = list(Lk[j])[:k - 2]
-            L1.sort()
-            L2.sort()
-            if L1 == L2:
-                retList.append(Lk[i] | Lk[j])
+            tempList1 = list(iteamSets[i])[:sizeOfItemSets - 2]
+            tempList2 = list(iteamSets[j])[:sizeOfItemSets - 2]
+            tempList1.sort()
+            tempList2.sort()
+            if tempList1 == tempList2:
+                retList.append(iteamSets[i] | iteamSets[j])
     return retList
+
+def scanData(data, Ck, minSupport):
+    scanCount = {}
+    for id in data:
+        for can in Ck:
+            if can.issubset(id):
+                if not can in scanCount:
+                    scanCount[can] = 1
+                else:
+                    scanCount[can] += 1
+    totalItems = float(len(data))
+    retList = []
+    supportData = {}
+    for key in scanCount:
+        support = scanCount[key] / totalItems * 1000
+        if support >= minSupport:
+            retList.insert(0, key)
+        supportData[key] = support
+    return (retList, supportData)
 
 def getDataFromCSV(fname):
     itemSets = []
@@ -36,41 +55,21 @@ def getDataFromCSV(fname):
     return (itemSet, itemSets)
 
 
-def scanData(D, Ck, minSupport):
-    ssCnt = {}
-    for tid in D:
-        for can in Ck:
-            if can.issubset(tid):
-                if not can in ssCnt:
-                    ssCnt[can] = 1
-                else:
-                    ssCnt[can] += 1
-    numItems = float(len(D))
-    retList = []
-    supportData = {}
-    for key in ssCnt:
-        support = ssCnt[key] / numItems * 1000
-        if support >= minSupport:
-            retList.insert(0, key)
-        supportData[key] = support
-    return (retList, supportData)
-
-
-def apriori(fname, minSupport):
-    (C1ItemSet, itemSetList) = getDataFromCSV(fname)
+def apriori(fileName, minSupport):
+    (itemSet, itemSetList) = getDataFromCSV(fileName)
 
     # print(itemSetList)
 
-    (L1, supportData) = scanData(itemSetList, C1ItemSet, minSupport)
-    L = [L1]
-    k = 2
-    while len(L[k - 2]) > 0:
-        Ck = dataSorting(L[k - 2], k)
-        (Lk, supK) = scanData(itemSetList, Ck, minSupport)
+    (scannedList, supportData) = scanData(itemSetList, itemSet, minSupport)
+    tempList = [scannedList]
+    tempValue = 2
+    while len(tempList[tempValue - 2]) > 0:
+        Ck = dataSorting(tempList[tempValue - 2], tempValue)
+        (iteamSets, supK) = scanData(itemSetList, Ck, minSupport)
         supportData.update(supK)
-        L.append(Lk)
-        k += 1
-    return (L, supportData)
+        tempList.append(iteamSets)
+        tempValue += 1
+    return (tempList, supportData)
 
 
 @app.route("/")
