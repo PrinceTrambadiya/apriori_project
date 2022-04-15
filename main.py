@@ -78,20 +78,22 @@ def home():
     return render_template("index.html")
 
 
-@app.route("/result", methods=['POST', 'GET'])
-def result():
-    output = request.form.to_dict()
-    name = output["name"]
-    return render_template("index.html", name=name)
+# @app.route("/result", methods=['POST', 'GET'])
+# def result():
+#     output = request.form.to_dict()
+#     name = output["name"]
+#     return render_template("index.html", name=name)
 
 
 @app.route("/resultCSV", methods=['POST', 'GET'])
 def resultCSV():
     output = request.files['csv_files']
-    print(output)
+    minSupp = request.form['minSupp']
+    # print(output)
+    # print(minSupp)
     # (freqItemSet, rules) = aprioriFromFile("E://Computer_Science//SEM_1//IA//Course_Project//WebSite//CSV_files//1000-out1.csv",20, 0.50)
-    (freqItemSet, rules) = apriori(output, 20)
-
+    (freqItemSet, rules) = apriori(output, int(minSupp))
+    print(len(freqItemSet))
     for count in freqItemSet:
 
         for item1 in freqItemSet[0]:
@@ -122,7 +124,8 @@ def resultCSV():
         item.reverse()
         for subItem in item:
             finalList.append(list(subItem))
-    return render_template("index.html", name=finalList)
+    final = [finalList, len(finalList)]
+    return render_template("index.html", name=final)
 
 
 if __name__ == '__main__':
