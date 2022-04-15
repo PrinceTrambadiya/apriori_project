@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request
 from csv import reader
 import io
-import os
+import time
 
 app = Flask(__name__)
 
@@ -92,39 +92,34 @@ def resultCSV():
     # print(output)
     # print(minSupp)
     # (freqItemSet, rules) = aprioriFromFile("E://Computer_Science//SEM_1//IA//Course_Project//WebSite//CSV_files//1000-out1.csv",20, 0.50)
+    start_time = time.time()
     (freqItemSet, rules) = apriori(output, int(minSupp))
-    print(len(freqItemSet))
-    for count in freqItemSet:
+    tempCombinedIteamSets = []
+    for i in freqItemSet:
+        for j in i:
+            tempCombinedIteamSets.append(j)
+    combinedIteamSets = []
+    for i in tempCombinedIteamSets:
+        combinedIteamSets.append(i)
 
-        for item1 in freqItemSet[0]:
-            for item2 in freqItemSet[1]:
-                for item3 in freqItemSet[2]:
-                    for item4 in freqItemSet[3]:
-                        if item1.issubset(item2) \
-                                or item1.issubset(item3) \
-                                or item1.issubset(item4):
-                            try:
-                                freqItemSet[0].remove(item1)
-                            except:
-                                {}
-                        if item2.issubset(item3) \
-                                or item2.issubset(item4):
-                            try:
-                                freqItemSet[1].remove(item2)
-                            except:
-                                {}
-                        if item3.issubset(item4):
-                            try:
-                                freqItemSet[2].remove(item3)
-                            except:
-                                {}
+    for i in range(len(tempCombinedIteamSets)):
+        for j in range(i + 1, len(tempCombinedIteamSets)):
+            if tempCombinedIteamSets[i].issubset(tempCombinedIteamSets[j]):
+                try:
+                    if tempCombinedIteamSets[i] in combinedIteamSets:
+                        combinedIteamSets.remove(tempCombinedIteamSets[i])
+                except:
+                    {}
+    
+    print(combinedIteamSets)
+    print(len(combinedIteamSets))
 
     finalList = []
-    for item in freqItemSet:
-        item.reverse()
-        for subItem in item:
-            finalList.append(list(subItem))
-    final = [finalList, len(finalList)]
+    for item in combinedIteamSets:
+        finalList.append(list(item))
+            
+
+    final = [finalList, len(finalList), output, minSupp, (time.time() - start_time)]
     return render_template("index.html", name=final)
 
 
