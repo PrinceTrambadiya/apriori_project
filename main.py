@@ -71,29 +71,7 @@ def apriori(fileName, minSupport):
         tempValue += 1
     return (tempList, supportData)
 
-
-@app.route("/")
-@app.route("/home")
-def home():
-    return render_template("index.html")
-
-
-# @app.route("/result", methods=['POST', 'GET'])
-# def result():
-#     output = request.form.to_dict()
-#     name = output["name"]
-#     return render_template("index.html", name=name)
-
-
-@app.route("/resultCSV", methods=['POST', 'GET'])
-def resultCSV():
-    output = request.files['csv_files']
-    minSupp = request.form['minSupp']
-    # print(output)
-    # print(minSupp)
-    # (freqItemSet, rules) = aprioriFromFile("E://Computer_Science//SEM_1//IA//Course_Project//WebSite//CSV_files//1000-out1.csv",20, 0.50)
-    start_time = time.time()
-    (freqItemSet, rules) = apriori(output, int(minSupp))
+def removeSubsets(freqItemSet):
     tempCombinedIteamSets = []
     for i in freqItemSet:
         for j in i:
@@ -110,15 +88,30 @@ def resultCSV():
                         combinedIteamSets.remove(tempCombinedIteamSets[i])
                 except:
                     {}
-    
-    print(combinedIteamSets)
-    print(len(combinedIteamSets))
-
     finalList = []
     for item in combinedIteamSets:
         finalList.append(list(item))
-            
+    print(finalList)
+    print(len(finalList))
+    return finalList
 
+
+@app.route("/")
+@app.route("/home")
+def home():
+    return render_template("index.html")
+
+
+@app.route("/resultCSV", methods=['POST', 'GET'])
+def resultCSV():
+    output = request.files['csv_files']
+    minSupp = request.form['minSupp']
+    # print(output)
+    # print(minSupp)
+    # (freqItemSet, rules) = aprioriFromFile("E://Computer_Science//SEM_1//IA//Course_Project//WebSite//CSV_files//1000-out1.csv",20, 0.50)
+    start_time = time.time()
+    (freqItemSet, rules) = apriori(output, int(minSupp))
+    finalList = removeSubsets(freqItemSet)
     final = [finalList, len(finalList), output, minSupp, (time.time() - start_time)]
     return render_template("index.html", name=final)
 
